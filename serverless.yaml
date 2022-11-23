@@ -1,0 +1,41 @@
+service: ${file(./package.json):name}
+frameworkVersion: "3"
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+  - serverless-prune-plugin
+package:
+  individually: true
+provider:
+  name: aws
+  region: ap-southeast-2
+  runtime: nodejs16.x
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+    NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000"
+    STAGE: ${sls:stage}
+custom:
+  serverless-offline:
+    allowCache: true
+    useChildProcesses: true
+    httpPort: 3000
+  prune:
+    automatic: true
+    number: 3
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    exclude:
+      - aws-sdk
+    target: node16
+    platform: node
+    concurrency: 10
+functions:
+  myFunction:
+    handler: src/handlers/my-handler.handler
+    events:
+      - http:
+          path: /
+          method: get
+          cors: true
